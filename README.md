@@ -1,253 +1,362 @@
-﻿# Finlytics AI
+﻿# 🏦 Finlytics AI — OpenEnv RL Environment
+### MSME Loan Credit Decision Environment for RL Agent Training
 
-AI-powered open-source MSME loan scoring and decision platform with ML-based credit risk assessment, intelligent document extraction, and real-time scoring via REST API.
+> **Meta PyTorch OpenEnv Hackathon × Scaler School of Technology, Bengaluru**
+> Built on [OpenEnv](https://github.com/meta-pytorch/OpenEnv) — Meta's open-source RL environment framework
 
-## Overview
+[![openenv-core](https://img.shields.io/badge/openenv--core-compatible-blue)](https://pypi.org/project/openenv-core/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![PyTorch](https://img.shields.io/badge/PyTorch-compatible-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org)
+[![Hugging Face](https://img.shields.io/badge/🤗-Hugging%20Face-yellow)](https://huggingface.co)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Finlytics AI** is a comprehensive lending risk assessment platform that automates credit evaluation for MSME (Micro, Small, and Medium-sized Enterprises) borrowers. The system combines:
-- **Backend API**: FastAPI-based microservice for scoring and application management
-- **Frontend Dashboard**: Next.js web interface with real-time scoring and applicant management
-- **ML Pipeline**: XGBoost-based probability of default prediction with SHAP explainability
-- **Document Processing**: Automated extraction and validation of financial documents
+---
 
-## Problem Statement
+## 🎯 What Is This Environment?
 
-Traditional loan screening is:
-- **Time-consuming**: Manual document review and scoring take days/weeks
-- **Inconsistent**: Different loan officers apply varying criteria
-- **Poorly-scaled**: Difficult to review high application volumes
-- **Opaque**: Borrowers don't understand why they're approved/rejected
+**Finlytics AI** is an OpenEnv-compliant reinforcement learning environment where an AI agent learns to make **MSME loan credit decisions** — deciding whether to approve, reject, or restructure loan applications, and recommending appropriate amounts and tenures.
 
-## Solution
+The agent interacts with a simulated credit evaluation environment containing realistic Indian MSME financial profiles. It receives structured observations (GST data, bank statement metrics, ITR signals), takes credit decision actions, and earns rewards based on decision quality measured against ground-truth risk labels produced by a calibrated XGBoost model.
 
-An integrated platform that:
-1. **Accepts applications** with document uploads (GST, bank statements, ITR)
-2. **Extracts financial data** automatically from documents
-3. **Scores risk** using ML model + business rules in milliseconds
-4. **Explains decisions** with top factors driving approval/rejection
-5. **Manages workflow** from submission through credit committee review
-6. **Tracks analytics** on portfolio quality and model performance
+This environment is fully compatible with any RL framework that supports the OpenEnv spec: **TRL, torchforge, SkyRL, Unsloth, ART, and Oumi**.
 
-## Key Features
+---
 
-### For Borrowers
-- ✅ Simple online application with 3 document uploads
-- ✅ Real-time risk score and decision feedback
-- ✅ Transparent scoring explanation (top 5 factors)
-- ✅ Dashboard to track application status
-- ✅ Communication channel with credit managers
+## 🌍 Why This Environment?
 
-### For Credit Managers
-- ✅ Centralized dashboard of all applications
-- ✅ ML-powered recommendations with confidence scores
-- ✅ Customizable loan recommendations (amount, tenure)
-- ✅ Committee Appraisal Memo (CAM) generation
-- ✅ Document verification workflow  
-- ✅ Application assignment and tracking
+India has **63 million MSMEs** but **80% are credit-invisible** — rejected not because they are risky, but because evaluation is manual, slow, and inconsistent. Training an RL agent in this environment teaches it to:
 
-### For Business
-- ✅ **Speed**: Score 1000s of applications daily
-- ✅ **Accuracy**: 78% PD prediction power with interpretable factors
-- ✅ **Compliance**: GST, ITR, bank statement validation
-- ✅ **Transparency**: SHAP-based factor importance explanations
-- ✅ **Scalability**: Multi-user, cloud-ready architecture
+- Make faster, consistent credit decisions across diverse MSME profiles
+- Learn the relationship between financial signals and default probability
+- Generalise across sectors: retail, manufacturing, services, agriculture
+- Optimise for both portfolio quality and approval rate simultaneously
 
-## Tech Stack
+This is a **real-world, high-stakes sequential decision problem** — exactly the kind where RL agents can demonstrably outperform rule-based systems.
 
-| Component | Technology | Version |
-|-----------|-----------|---------|
-| **Backend** | Python FastAPI, Pydantic | 3.14 |
-| **Frontend** | Next.js (React), TypeScript, TailwindCSS | Latest |
-| **ML** | XGBoost, scikit-learn, SHAP, pandas, numpy | Latest |
-| **Database** | JSON (current), ready for PostgreSQL | - |
-| **Deployment** | Docker-ready, cloud agnostic | - |
+---
 
-## Project Structure
+## ⚙️ OpenEnv Spec Compliance
+
+| Spec Requirement | Status | File |
+|---|---|---|
+| `Environment` base class | ✅ | `server/environment.py` |
+| `EnvClient` base class | ✅ | `client.py` |
+| `reset()` → `Observation` | ✅ | Returns new MSME applicant profile |
+| `step(action)` → `StepResult` | ✅ | Returns scored decision + reward |
+| `state()` → `State` | ✅ | Episode ID, step count, metadata |
+| Pydantic `Action` model | ✅ | `models.py` → `CreditDecisionAction` |
+| Pydantic `Observation` model | ✅ | `models.py` → `ApplicantObservation` |
+| Docker containerised server | ✅ | `server/Dockerfile` |
+| FastAPI server | ✅ | `server/app.py` |
+| `openenv.yaml` manifest | ✅ | `openenv.yaml` |
+| `pyproject.toml` | ✅ | `pyproject.toml` |
+| Programmatic grader | ✅ | `tests/test_environment.py` |
+| Defined reward logic | ✅ | `server/environment.py` |
+| `inference.py` RL agent loop | ✅ | `inference.py` |
+| Hugging Face deployable | ✅ | `openenv push` compatible |
+
+---
+
+## 🏗️ Project Structure
 
 ```
-.
-├── backend/                   # FastAPI application
-│   ├── app.py                # Main application entry
-│   ├── routers/              # API endpoints (scoring, applications)
-│   ├── services/             # Business logic (scoring engine, document extraction)
-│   ├── schemas/              # Pydantic models for request/response
-│   └── data/                 # Sample data and fixtures
-├── frontend/                 # Next.js web application
-│   ├── app/                  # React pages and layouts
-│   ├── components/           # Reusable React components
-│   ├── lib/                  # Utilities, types, context
-│   └── public/               # Static assets
-├── ml/                       # Machine Learning pipeline
-│   ├── models/               # Trained model artifacts (.pkl files)
-│   ├── data/                 # Training data and synthetic generation
-│   └── *.py                  # Training and evaluation scripts
-├── tests/                    # Integration and unit tests
-└── docs/                     # Documentation and guides
+finlytics__AI/
+│
+├── __init__.py                  # Exports: CreditDecisionAction, ApplicantObservation, FinlyticsEnv
+├── models.py                    # Pydantic Action + Observation types
+├── client.py                    # FinlyticsEnv(EnvClient) — OpenEnv client
+├── openenv.yaml                 # Environment manifest for HF Hub
+├── pyproject.toml               # Package deps + metadata
+├── inference.py                 # Sample RL agent loop (required by spec)
+│
+├── server/
+│   ├── app.py                   # FastAPI server entry point
+│   ├── environment.py           # FinlyticsEnvironment(Environment) — core RL logic
+│   ├── Dockerfile               # Container image
+│   └── requirements.txt         # Docker dependencies
+│
+├── tests/
+│   ├── __init__.py
+│   └── test_environment.py      # Programmatic grader (hackathon evaluation)
+│
+├── examples/
+│   └── quickstart.py            # Offline usage demo for judges
+│
+│   ── Existing Finlytics Production Stack ──
+│
+├── backend/                     # FastAPI scoring microservice + document extraction
+├── frontend/                    # Next.js credit manager + borrower dashboard
+├── ml/                          # XGBoost PD model, SHAP explainability, training scripts
+├── mock_pdfs/                   # Sample GST, bank statement, ITR documents
+├── docs/                        # Architecture docs
+├── strict_mock_eval.py          # End-to-end scoring evaluation
+└── validate_scoring_engine.py   # Scoring engine validation
 ```
 
-## Quick Start
+---
 
-### Prerequisites
-- Python 3.10+ (backend & ML)
-- Node.js 18+ (frontend)
-- Git
+## 🔄 Environment Design
 
-### Backend Setup
+### Action Space — `CreditDecisionAction`
+
+```python
+class CreditDecisionAction(Action):
+    decision: Literal["approve", "reject", "restructure"]
+    recommended_amount: float        # INR; 0 if decision is reject
+    recommended_tenure_months: int   # 0 if decision is reject
+    risk_band: Literal["low", "medium", "high"]
+    reasoning: str                   # Agent's justification (used in LLM scoring)
+```
+
+### Observation Space — `ApplicantObservation`
+
+```python
+class ApplicantObservation(Observation):
+    # Business identity
+    gstin: str
+    business_age_months: int
+    sector: str                          # retail | manufacturing | services | agri
+
+    # Revenue signals
+    monthly_revenue: float               # INR
+    revenue_trend_3m: float              # % change over 3 months
+    gst_filing_consistency: float        # 0.0 – 1.0
+
+    # Debt and obligations
+    total_outstanding_debt: float
+    monthly_emi_commitments: float
+    debt_service_coverage_ratio: float   # DSCR
+
+    # Cash flow (from bank statement)
+    avg_monthly_balance: float
+    balance_volatility: float            # std dev / mean
+
+    # Tax compliance
+    itr_filed: bool
+    itr_years_filed: int
+
+    # Episode tracking
+    episode_id: str
+    step: int
+    max_steps: int
+```
+
+### Reward Function
+
+Reward is computed by comparing the agent's decision against a **ground-truth risk label** generated by the XGBoost PD model:
+
+```
+reward = decision_accuracy          # correct approve/reject/restructure
+       + calibration_bonus          # +0.3 for correct risk band
+       + amount_appropriateness     # +0.2 if amount within valid range
+       + tenure_appropriateness     # +0.1 if tenure within valid range
+       - false_approval_penalty     # -1.5 for approving a high-risk applicant
+       - false_rejection_penalty    # -0.5 for rejecting a low-risk applicant
+
+reward ∈ [-2.0, 2.0]
+```
+
+The asymmetric penalty structure reflects real-world credit costs: a missed default is far more damaging than a missed approval.
+
+---
+
+## 🚀 Quick Start
+
+### 1. Install
 
 ```bash
-cd backend
+pip install openenv-core
+pip install -e .
+```
+
+### 2. Run Server Locally (no Docker)
+
+```bash
+cd server
 pip install -r requirements.txt
-python app.py
-# API runs on http://localhost:8000
-# Docs: http://localhost:8000/docs
+uvicorn app:app --host 0.0.0.0 --port 8000
 ```
 
-### Frontend Setup
+### 3. Run Server via Docker
 
 ```bash
-cd frontend
-npm install  # or pnpm install
-npm run dev
-# Frontend runs on http://localhost:3000
+docker build -t finlytics-env ./server
+docker run -p 8000:8000 finlytics-env
 ```
 
-### Configuration
+### 4. Use the Environment (Async)
 
-Set environment variables (frontend only):
-```bash
-# .env.local (frontend directory)
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1
+```python
+import asyncio
+from finlytics_env import CreditDecisionAction, FinlyticsEnv
+
+async def main():
+    async with FinlyticsEnv(base_url="http://localhost:8000") as env:
+        result = await env.reset()
+        obs = result.observation
+        print(f"Applicant GSTIN: {obs.gstin} | Revenue: ₹{obs.monthly_revenue:,.0f}/mo")
+        print(f"DSCR: {obs.debt_service_coverage_ratio:.2f} | GST Consistency: {obs.gst_filing_consistency:.2f}")
+
+        action = CreditDecisionAction(
+            decision="approve",
+            recommended_amount=obs.monthly_revenue * 3,
+            recommended_tenure_months=24,
+            risk_band="low",
+            reasoning="Strong GST compliance, healthy DSCR, stable revenue trend."
+        )
+        result = await env.step(action)
+        print(f"Reward: {result.reward:.3f} | Done: {result.done}")
+
+asyncio.run(main())
 ```
 
-## API Documentation
+### 5. Synchronous Usage
 
-All backend endpoints are documented in Swagger UI at `http://localhost:8000/docs` when running locally.
+```python
+from finlytics_env import CreditDecisionAction, FinlyticsEnv
 
-### Key Endpoints
-
-**POST `/api/v1/score/gstin`** - Score a borrower by GSTIN
-```json
-{
-	"gstin": "29ABCDE1234F1Z5",
-	"applicant_phone": "+91-9876543210",
-	"monthly_revenue": 500000,
-	"total_outstanding_debt": 2000000,
-	"monthly_emi_commitments": 150000,
-	"business_age_months": 36
-}
+with FinlyticsEnv(base_url="http://localhost:8000").sync() as env:
+    result = env.reset()
+    action = CreditDecisionAction(
+        decision="restructure",
+        recommended_amount=250000,
+        recommended_tenure_months=12,
+        risk_band="medium",
+        reasoning="Moderate risk — smaller amount recommended."
+    )
+    result = env.step(action)
+    print(f"Reward: {result.reward}")
 ```
 
-**GET `/api/v1/applications`** - List all applications with filtering
-**POST `/api/v1/applications`** - Create new application
-**GET `/api/v1/applications/{id}`** - Get application details
-**PUT `/api/v1/applications/{id}`** - Update application status
+---
 
-## ML Model
+## 🧪 Programmatic Grader
 
-### Probability of Default (PD) Model
-- **Algorithm**: XGBoost gradient boosting
-- **Features**: 20+ financial indicators (revenue, debt, compliance, cash flow health)
-- **Training Data**: 2,000+ synthetic MSME records calibrated to Indian market
-- **Performance**: AUC=0.82, PD prediction on 50-basis point buckets
-- **Output**: PD score (0-1), risk category (Low/Medium/High)
-
-### Explainability
-- SHAP values computed for each prediction
-- Top 5 factors affecting loan decision shown to borrowers
-- Feature importance analysis for model monitoring
-
-## Testing
-
-### Run Tests
-```bash
-# Backend tests
-cd backend
-pytest tests/
-
-# Frontend tests  
-cd frontend
-npm run test
-```
-
-## Scoring Algorithm
-
-1. **Extract** financial metrics from uploaded documents (GST, bank statements, ITR)
-2. **Validate** GSTIN and check compliance history
-3. **Compute** ML probability of default using XGBoost model
-4. **Apply** business rules:
-	 - Risk banding (Low: <20%, Medium: 20-50%, High: >50%)
-	 - Loan amount recommendation (based on revenue & debt capacity)
-	 - Tenure recommendation (6-36 months based on cash flow)
-5. **Generate** scoring explanation with top risk factors
-
-## Output: Risk Band Definition
-
-| Risk Band | PD Range | Loan Amount | Max Tenure | Action |
-|-----------|----------|-------------|-----------|--------|
-| Low Risk | <20% | Up to 5x monthly revenue | 36 months | Approve |
-| Medium Risk | 20-50% | Up to 2x monthly revenue | 18 months | Review |
-| High Risk | >50% | Up to 1x monthly revenue | 6 months | Reject/Restructure |
-
-## Deployment
-
-### Docker Deployment
+The hackathon evaluates submissions using the programmatic grader in `tests/test_environment.py`.
 
 ```bash
-# Build and run backend
-docker build -t finlytics-backend ./backend
-docker run -p 8000:8000 finlytics-backend
+# Start the server
+docker build -t finlytics-env ./server && docker run -d -p 8000:8000 finlytics-env
 
-# Build and run frontend  
-docker build -t finlytics-frontend ./frontend
-docker run -p 3000:3000 finlytics-frontend
+# Run grader
+pytest tests/test_environment.py -v
 ```
 
-### Cloud Deployment (AWS/GCP/Azure)
-- Backend: Deploy to AWS Lambda, Cloud Functions, or App Service
-- Frontend: Deploy to S3+CloudFront, Cloud Storage, or Blob Storage
-- Database: Connect to managed database (RDS, Cloud SQL, Cosmos DB)
+**What the grader checks:**
 
-## Performance Characteristics
+- `reset()` returns a valid `ApplicantObservation` with all required fields populated
+- `step()` returns a `StepResult` with a numeric reward, `done` flag, and next observation
+- `state()` returns a `State` with correct `episode_id` and `step_count`
+- Reward is bounded within `[-2.0, 2.0]`
+- Episode terminates correctly after `max_steps`
+- Server handles concurrent requests without error
+- Invalid actions are rejected with appropriate error responses
 
-- **Scoring latency**: <500ms per application
-- **Throughput**: 1000+ applications/hour
-- **Model accuracy**: 78% probability calibration
-- **Uptime SLA**: 99.5% (typical cloud deployment)
+---
 
-## Future Enhancements
+## 🤖 RL Agent Loop (`inference.py`)
 
-- [ ] Multi-language support (Hindi, Tamil, Kannada)
-- [ ] Mobile app for borrower submission
-- [ ] Real-time UPI transaction graph analysis
-- [ ] Automated compliance monitoring
-- [ ] Portfolio-level risk analytics dashboard
-- [ ] Advanced fraud detection with behavioral analysis
-- [ ] International expansion (ASEAN borrowers)
+```bash
+python inference.py
+```
 
-## Contributing
+Runs a heuristic RL agent for 5 episodes, printing step-by-step rewards and final episode scores. Demonstrates the complete RL training loop against this environment — ready to plug into TRL, torchforge, or any other OpenEnv-compatible framework.
 
-This project welcomes contributions! See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
+---
 
-## License
+## 📊 ML Oracle (Reward Ground Truth)
 
-Open source - see LICENSE file for details
+The environment's reward computation is backed by a production-grade ML pipeline:
 
-## Team
+| Component | Detail |
+|---|---|
+| Algorithm | XGBoost Gradient Boosting |
+| Training data | 2,000+ synthetic MSME records, calibrated to Indian market |
+| AUC-ROC | 0.82 |
+| Features | 20+ indicators: revenue, DSCR, GST compliance, ITR, cash flow volatility |
+| Explainability | SHAP values — top 5 factors per applicant |
+| Scoring latency | < 100ms |
 
-Developed by a team of 4 engineers:
-- **Backend**: API and scoring orchestration
-- **Frontend**: User interface and real-time feedback
-- **ML**: Model training, evaluation, and optimization
-- **DevOps**: Integration, testing, and deployment
+The scoring engine at `backend/services/scoring_engine.py` serves as the ground-truth oracle. Agents that learn to align their decisions with the PD model's risk assessments will achieve the highest cumulative rewards.
 
-## Support
+---
 
-For questions or issues:
-1. Check [docs/](docs/) for detailed guides
-2. Review [tests/](tests/) for usage examples
-3. Check [backend/README.md](backend/README.md) for API-specific details
-4. Check [frontend/README.md](frontend/README.md) for frontend-specific details
+## 🌐 Deploy to Hugging Face Spaces
 
-## Changelog
+```bash
+huggingface-cli login
+openenv push --repo-id your-username/finlytics-env
+```
 
-See [CHANGELOG.md](docs/CHANGELOG.md) for version history and updates.
+Once deployed, any RL framework can connect directly:
+
+```python
+async with FinlyticsEnv(base_url="https://your-username-finlytics-env.hf.space") as env:
+    result = await env.reset()
+```
+
+---
+
+## 🔗 RL Framework Compatibility
+
+| Framework | Compatible |
+|---|---|
+| [TRL (Hugging Face)](https://huggingface.co/docs/trl/openenv) | ✅ GRPO training |
+| [torchforge](https://github.com/meta-pytorch/torchforge) | ✅ PyTorch-native RL |
+| [SkyRL (UC-Berkeley)](https://skyrl.readthedocs.io) | ✅ |
+| [Unsloth](https://github.com/unslothai/unsloth) | ✅ Efficient fine-tuning |
+| [ART (OpenPipe)](https://art.openpipe.ai/integrations/openenv-integration) | ✅ |
+| [Oumi](https://github.com/oumi-ai/oumi) | ✅ |
+
+---
+
+## 📋 `openenv.yaml` Manifest
+
+```yaml
+name: finlytics-env
+version: 0.1.0
+description: >
+  MSME loan credit decision RL environment. An agent evaluates
+  Indian MSME applicant profiles and learns to make accurate
+  credit decisions optimised for both approval rate and portfolio quality.
+author: your-username
+license: MIT
+tags:
+  - finance
+  - credit-risk
+  - msme
+  - india
+  - decision-making
+action_space: CreditDecisionAction
+observation_space: ApplicantObservation
+max_steps: 10
+reward_range: [-2.0, 2.0]
+```
+
+---
+
+## 👥 Team
+
+| Role | Responsibility |
+|---|---|
+| **RL / OpenEnv** | Environment design, reward function, grader, inference loop |
+| **Backend** | FastAPI scoring API, document extraction, application management |
+| **ML** | XGBoost PD model, SHAP pipeline, synthetic data generation |
+| **Frontend** | Next.js dashboard for borrowers and credit managers |
+
+---
+
+## 📄 License
+
+MIT — see [LICENSE](LICENSE)
+
+---
+
+## 🙏 Built With
+
+[OpenEnv](https://github.com/meta-pytorch/OpenEnv) · [PyTorch](https://pytorch.org) · [Hugging Face](https://huggingface.co) · [XGBoost](https://xgboost.readthedocs.io) · [FastAPI](https://fastapi.tiangolo.com) · [Next.js](https://nextjs.org)
+
+---
+
+> Built at **Meta PyTorch OpenEnv Hackathon × Scaler School of Technology, Bengaluru** 🇮🇳
+> Real infrastructure. Real impact. Contributing to the OpenEnv open-source ecosystem.

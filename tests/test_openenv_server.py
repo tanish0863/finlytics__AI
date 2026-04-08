@@ -55,6 +55,10 @@ def test_openenv_alias_endpoints() -> None:
     assert reset_response.status_code == 200
     assert "observation" in reset_response.json()
 
+    reset_response_slash = client.post("/openenv/reset/")
+    assert reset_response_slash.status_code == 200
+    assert "observation" in reset_response_slash.json()
+
     action = {
         "spend_pct": 0.30,
         "save_pct": 0.30,
@@ -66,10 +70,22 @@ def test_openenv_alias_endpoints() -> None:
     assert step_response.status_code == 200
     assert "reward" in step_response.json()
 
+    step_response_slash = client.post("/openenv/step/", json={"action": action})
+    assert step_response_slash.status_code == 200
+    assert "reward" in step_response_slash.json()
+
     state_response = client.get("/openenv/state")
     assert state_response.status_code == 200
     assert "task_id" in state_response.json()
 
+    state_response_slash = client.get("/openenv/state/")
+    assert state_response_slash.status_code == 200
+    assert "task_id" in state_response_slash.json()
+
     grade_response = client.get("/openenv/grade")
     assert grade_response.status_code == 200
     assert "score" in grade_response.json()
+
+    grade_response_slash = client.get("/openenv/grade/")
+    assert grade_response_slash.status_code == 200
+    assert "score" in grade_response_slash.json()

@@ -111,12 +111,14 @@ def grade_session(session_id: str) -> dict[str, object]:
 
 
 @app.post("/reset")
+@app.post("/reset/")
 def reset_default() -> dict[str, object]:
     env = _get_default_env()
     return {"observation": env.reset().model_dump()}
 
 
 @app.post("/step")
+@app.post("/step/")
 def step_default(request: StepRequest) -> dict[str, object]:
     env = _get_default_env()
     try:
@@ -133,32 +135,38 @@ def step_default(request: StepRequest) -> dict[str, object]:
 
 
 @app.get("/state")
+@app.get("/state/")
 def get_state_default() -> dict[str, object]:
     env = _get_default_env()
     return env.state().model_dump()
 
 
 @app.get("/grade")
+@app.get("/grade/")
 def grade_default() -> dict[str, object]:
     env = _get_default_env()
     return env.grade().model_dump()
 
 
 @app.post("/openenv/reset")
+@app.post("/openenv/reset/")
 def openenv_reset() -> dict[str, object]:
     return reset_default()
 
 
 @app.post("/openenv/step")
+@app.post("/openenv/step/")
 def openenv_step(request: StepRequest) -> dict[str, object]:
     return step_default(request)
 
 
 @app.get("/openenv/state")
+@app.get("/openenv/state/")
 def openenv_state() -> dict[str, object]:
     return get_state_default()
 
 
 @app.get("/openenv/grade")
+@app.get("/openenv/grade/")
 def openenv_grade() -> dict[str, object]:
     return grade_default()

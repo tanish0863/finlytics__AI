@@ -1,0 +1,33 @@
+name: finlytics-openenv-financial-planning
+version: 1.0.0
+tag: openenv
+description: OpenEnv-compatible personal finance planning environment with step/reset/state API.
+entrypoint: openenv.server:app
+environment_class: openenv.env.FinancialPlanningEnv
+observation_model: openenv.models.FinancialObservation
+action_model: openenv.models.FinancialAction
+reward_model: openenv.models.FinancialReward
+state_model: openenv.models.FinancialState
+tasks:
+  - task_id: budget_easy
+    difficulty: easy
+    title: Monthly Budget Stabilization
+    objective: Keep the household budget positive, build an emergency cushion, and avoid overspending.
+    grader: openenv.grading.grade_task
+  - task_id: debt_medium
+    difficulty: medium
+    title: Debt Paydown With Safety Buffer
+    objective: Reduce high-interest debt while funding an emergency fund and keeping cash flow resilient.
+    grader: openenv.grading.grade_task
+  - task_id: volatile_hard
+    difficulty: hard
+    title: Volatile Cash-Flow Planning
+    objective: Survive income volatility, absorb shocks, and preserve liquidity while paying down debt.
+    grader: openenv.grading.grade_task
+episode_format:
+  reset_returns: FinancialObservation
+  step_returns: [FinancialObservation, FinancialReward, bool, dict]
+  state_returns: FinancialState
+reward_range: [0.0, 1.0]
+hf_space_tag: openenv
+container_port: 7860

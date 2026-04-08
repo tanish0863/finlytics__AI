@@ -1,0 +1,16 @@
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+.pytest_cache
+.mypy_cache
+.ruff_cache
+frontend/node_modules
+frontend/.next
+ml/data
+mock_pdfs/packages
+tests/__pycache__

@@ -31,6 +31,21 @@ app = FastAPI(
 )
 
 _SESSIONS: dict[str, FinancialPlanningEnv] = {}
+_DEFAULT_ENV: FinancialPlanningEnv | None = None
+
+
+def _get_default_env() -> FinancialPlanningEnv:
+    global _DEFAULT_ENV
+    if _DEFAULT_ENV is None:
+        _DEFAULT_ENV = FinancialPlanningEnv()
+    return _DEFAULT_ENV
+
+
+def _get_session(session_id: str) -> FinancialPlanningEnv:
+    try:
+        return _SESSIONS[session_id]
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=f"Unknown session_id '{session_id}'.") from error
 
 
 @app.get("/")
@@ -95,8 +110,55 @@ def grade_session(session_id: str) -> dict[str, object]:
     return env.grade().model_dump()
 
 
-def _get_session(session_id: str) -> FinancialPlanningEnv:
+@app.post("/reset")
+def reset_default() -> dict[str, object]:
+    env = _get_default_env()
+    return {"observation": env.reset().model_dump()}
+
+
+@app.post("/step")
+def step_default(request: StepRequest) -> dict[str, object]:
+    env = _get_default_env()
     try:
-        return _SESSIONS[session_id]
-    except KeyError as error:
-        raise HTTPException(status_code=404, detail=f"Unknown session_id '{session_id}'.") from error
+        observation, reward, done, info = env.step(request.action)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+    return {
+        "observation": observation.model_dump(),
+        "reward": reward.model_dump(),
+        "done": done,
+        "info": info,
+    }
+
+
+@app.get("/state")
+def get_state_default() -> dict[str, object]:
+    env = _get_default_env()
+    return env.state().model_dump()
+
+
+@app.get("/grade")
+def grade_default() -> dict[str, object]:
+    env = _get_default_env()
+    return env.grade().model_dump()
+
+
+@app.post("/openenv/reset")
+def openenv_reset() -> dict[str, object]:
+    return reset_default()
+
+
+@app.post("/openenv/step")
+def openenv_step(request: StepRequest) -> dict[str, object]:
+    return step_default(request)
+
+
+@app.get("/openenv/state")
+def openenv_state() -> dict[str, object]:
+    return get_state_default()
+
+
+@app.get("/openenv/grade")
+def openenv_grade() -> dict[str, object]:
+    return grade_default()
